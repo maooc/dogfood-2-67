@@ -1,0 +1,26 @@
+{
+  "project_name": "myapp",
+  "environments": {
+    "production": {
+      "name": "production",
+      "file_path": "/Users/wen/workspace/字节项目/dogfood/dogfood-2-67/02-glm/envsync/configs/production.json",
+      "format": "json",
+      "sensitive_fields": []
+    },
+    "development": {
+      "name": "development",
+      "file_path": "/Users/wen/workspace/字节项目/dogfood/dogfood-2-67/02-glm/envsync/configs/development.json",
+      "format": "json",
+      "sensitive_fields": []
+    },
+    "staging": {
+      "name": "staging",
+      "file_path": "/Users/wen/workspace/字节项目/dogfood/dogfood-2-67/02-glm/envsync/configs/staging.yaml",
+      "format": "yaml",
+      "sensitive_fields": []
+    }
+  },
+  "sensitive_fields": [],
+  "schema_file": null,
+  "snapshots_dir": "/Users/wen/workspace/字节项目/dogfood/dogfood-2-67/02-glm/envsync/.envsync/snapshots"
+}

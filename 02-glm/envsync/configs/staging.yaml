@@ -1,0 +1,31 @@
+app:
+  name: myapp
+  version: 1.0.0
+  debug: false
+
+database:
+  host: db.staging.local
+  port: 5432
+  name: myapp_staging
+  username: staging_user
+  password: staging_secret_pass
+
+redis:
+  host: redis.staging.local
+  port: 6379
+  password: redis_staging_pass
+
+api:
+  base_url: https://staging-api.example.com
+  timeout: 30
+  retry_count: 2
+
+logging:
+  level: WARNING
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: /var/log/myapp/staging.log
+
+features:
+  cache_enabled: true
+  rate_limit: 5000
+  maintenance_mode: false

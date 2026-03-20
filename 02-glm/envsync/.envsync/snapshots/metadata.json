@@ -1,0 +1,14 @@
+{
+  "production": {
+    "snapshot_20260320_000017_3946f069": {
+      "id": "snapshot_20260320_000017_3946f069",
+      "environment": "production",
+      "timestamp": "2026-03-20T00:00:17.056539",
+      "message": "Initial snapshot",
+      "checksum": "b769ea9920ad0562",
+      "file_path": "/Users/wen/workspace/字节项目/dogfood/dogfood-2-67/02-glm/envsync/.envsync/snapshots/snapshot_20260320_000017_3946f069.json",
+      "parent_id": null,
+      "tags": []
+    }
+  }
+}

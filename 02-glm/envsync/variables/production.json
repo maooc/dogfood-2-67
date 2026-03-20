@@ -1,0 +1,12 @@
+{
+  "app_name": "myapp",
+  "app_version": "2.0.0",
+  "DB_HOST": "production.db.local",
+  "DB_NAME": "myapp_prod",
+  "DB_USER": "prod_admin",
+  "DB_PASSWORD": "secure_password_here",
+  "REDIS_HOST": "redis.prod.local",
+  "REDIS_PASSWORD": "redis_secure_pass",
+  "API_BASE_URL": "https://api.myapp.com",
+  "LOG_LEVEL": "WARNING"
+}

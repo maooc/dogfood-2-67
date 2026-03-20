@@ -1,0 +1,34 @@
+{
+  "app": {
+    "name": "myapp",
+    "version": "1.0.0",
+    "debug": true
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "myapp_development",
+    "username": "dev_user",
+    "password": "dev_password"
+  },
+  "redis": {
+    "host": "localhost",
+    "port": 6379,
+    "password": ""
+  },
+  "api": {
+    "base_url": "http://localhost:8080",
+    "timeout": 60,
+    "retry_count": 1
+  },
+  "logging": {
+    "level": "DEBUG",
+    "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    "file": "./logs/app.log"
+  },
+  "features": {
+    "cache_enabled": false,
+    "rate_limit": 10000,
+    "maintenance_mode": false
+  }
+}

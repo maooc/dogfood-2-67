@@ -1,0 +1,200 @@
+# Envsync
+
+多环境配置文件管理工具，支持模板变量替换、环境差异对比、敏感字段加密、配置校验、版本快照、回滚和导出。
+
+## 功能特性
+
+- **环境管理**: 创建和管理多个环境（如 dev、staging、production）
+- **变量管理**: 为每个环境定义变量，支持继承和覆盖
+- **模板渲染**: 使用 `${variable}` 语法进行变量替换
+- **差异对比**: 对比不同环境之间的配置差异
+- **敏感字段加密**: 使用 Fernet 加密保护敏感数据
+- **配置校验**: 验证配置格式和值的有效性
+- **版本快照**: 创建配置快照，支持回滚
+- **多格式导出**: 支持 JSON、YAML、ENV、CSV、K8s Secret 等格式
+
+## 安装
+
+```bash
+pip install -e .
+```
+
+## 快速开始
+
+### 1. 初始化项目
+
+```bash
+envsync init --name myproject --env dev --env staging --env prod
+```
+
+### 2. 添加环境变量
+
+```bash
+envsync var set dev DATABASE_HOST localhost
+envsync var set dev DATABASE_PORT 5432
+envsync var set dev API_KEY secret123 --sensitive
+```
+
+### 3. 添加配置文件
+
+```bash
+envsync file add config.yaml config.yaml yaml --env dev
+```
+
+### 4. 渲染配置
+
+```bash
+envsync template render config.yaml --env dev
+```
+
+## 命令参考
+
+### 环境管理
+
+```bash
+# 列出环境
+envsync env list
+
+# 添加环境
+envsync env add test --description "测试环境"
+
+# 删除环境
+envsync env remove test --force
+```
+
+### 变量管理
+
+```bash
+# 列出变量
+envsync var list dev
+
+# 设置变量
+envsync var set dev DEBUG true --description "调试模式"
+
+# 删除变量
+envsync var remove dev DEBUG
+```
+
+### 配置文件管理
+
+```bash
+# 列出配置文件
+envsync file list
+
+# 添加配置文件
+envsync file add database config/database.yaml yaml --env dev --encrypt password
+
+# 删除配置文件
+envsync file remove database
+```
+
+### 模板操作
+
+```bash
+# 渲染模板
+envsync template render config --env dev --output config.dev.yaml
+
+# 预览渲染结果
+envsync template preview config --env dev
+```
+
+### 差异对比
+
+```bash
+# 对比两个环境
+envsync diff env dev prod
+
+# 对比变量
+envsync diff vars dev prod
+```
+
+### 加密管理
+
+```bash
+# 初始化加密
+envsync crypto init
+
+# 加密配置文件
+envsync crypto encrypt database
+
+# 解密配置文件
+envsync crypto decrypt database
+```
+
+### 配置校验
+
+```bash
+# 校验配置文件
+envsync validate file config --env dev
+
+# 校验整个环境
+envsync validate env dev
+```
+
+### 快照管理
+
+```bash
+# 创建快照
+envsync snapshot create dev --description "发布前备份"
+
+# 列出快照
+envsync snapshot list
+
+# 恢复快照
+envsync snapshot restore <snapshot_id>
+
+# 删除快照
+envsync snapshot delete <snapshot_id>
+```
+
+### 导出
+
+```bash
+# 导出环境配置
+envsync export env dev --output ./export --format yaml
+
+# 导出为 CSV
+envsync export csv dev prod --output ./vars.csv
+
+# 导出为 Kubernetes Secret
+envsync export k8s prod --output secret.yaml --name app-secret
+```
+
+## 配置文件模板示例
+
+创建模板文件 `config.template.yaml`:
+
+```yaml
+database:
+  host: ${DATABASE_HOST}
+  port: ${DATABASE_PORT:5432}
+  name: ${DATABASE_NAME:myapp}
+  
+api:
+  key: ${API_KEY}
+  url: ${API_URL}
+  debug: ${DEBUG:false}
+```
+
+使用模板:
+
+```bash
+envsync file add config config.yaml yaml --env dev --template config.template.yaml
+envsync template render config --env dev
+```
+
+## 项目结构
+
+```
+.
+├── .envsync/
+│   ├── config.yaml      # 项目配置
+│   ├── snapshots/       # 快照存储
+│   ├── templates/       # 模板文件
+│   └── keys/            # 加密密钥
+└── ...
+```
+
+## 许可证
+
+MIT
