@@ -1,40 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "envsync"
-version = "1.0.0"
-description = "A CLI tool for managing multi-environment configuration files with encryption, validation, and templating"
+version = "0.1.0"
+description = "Multi-environment configuration file management CLI tool"
+requires-python = ">=3.9"
+license = "MIT"
 authors = [
-  { name="envsync Team", email="envsync@example.com" }
+    { name = "envsync", email = "envsync@example.com" }
 ]
-readme = "README.md"
-license = { file="LICENSE" }
-requires-python = ">=3.10"
 dependencies = [
-  "typer>=0.9.0",
-  "cryptography>=41.0.0",
-  "python-dotenv>=1.0.0",
-  "rich>=13.0.0",
-  "click>=8.0.0",
-  "pyyaml>=6.0",
-  "toml>=0.10.2",
-  "jsonschema>=4.17.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "pydantic>=2.0.0",
+    "cryptography>=41.0.0",
+    "pyyaml>=6.0",
+    "toml>=0.10.2",
+    "deepdiff>=6.0.0",
+    "jinja2>=3.0.0",
+    "jsonschema>=4.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
 ]
 
 [project.scripts]
 envsync = "envsync.cli:app"
 
-[project.optional-dependencies]
-dev = [
-  "pytest>=7.0",
-  "pytest-cov>=4.0",
-  "black>=23.0",
-  "flake8>=6.0",
-  "mypy>=1.0",
-]
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["envsync*"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["src"]
+[tool.hatch.build.targets.wheel]
+packages = ["envsync"]
