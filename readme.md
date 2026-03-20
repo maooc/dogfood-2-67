@@ -1,502 +1,200 @@
-# envsync
+# Envsync
 
-A powerful CLI tool for managing multi-environment configuration files with encryption, validation, and templating.
+多环境配置文件管理工具，支持模板变量替换、环境差异对比、敏感字段加密、配置校验、版本快照、回滚和导出。
 
-## Features
+## 功能特性
 
-- 🔐 **Encryption** - Secure sensitive configuration values using AES encryption
-- 📝 **Templating** - Use variables in .env/.json/.yaml/.toml files with substitution
-- ✅ **Validation** - Validate configurations against JSON Schema or custom rules
-- 📊 **Diff** - Compare environments, files, and snapshots
-- 📸 **Snapshots** - Create point-in-time snapshots and roll back
-- 📤 **Export** - Export to multiple formats (JSON, YAML, TOML, .env)
-- 📥 **Import** - Import from existing configuration files
-- 🔄 **Render** - Render template files with environment variables
+- **环境管理**: 创建和管理多个环境（如 dev、staging、production）
+- **变量管理**: 为每个环境定义变量，支持继承和覆盖
+- **模板渲染**: 使用 `${variable}` 语法进行变量替换
+- **差异对比**: 对比不同环境之间的配置差异
+- **敏感字段加密**: 使用 Fernet 加密保护敏感数据
+- **配置校验**: 验证配置格式和值的有效性
+- **版本快照**: 创建配置快照，支持回滚
+- **多格式导出**: 支持 JSON、YAML、ENV、CSV、K8s Secret 等格式
 
-## Installation
+## 安装
 
 ```bash
-# From source
 pip install -e .
-
-# With development dependencies
-pip install -e ".[dev]"
 ```
 
-## Quick Start
+## 快速开始
 
-### 1. Initialize envsync
+### 1. 初始化项目
 
 ```bash
-envsync init
+envsync init --name myproject --env dev --env staging --env prod
 ```
 
-This creates the configuration directory and a default template.
-
-### 2. Create an Environment
+### 2. 添加环境变量
 
 ```bash
-envsync env create development
+envsync var set dev DATABASE_HOST localhost
+envsync var set dev DATABASE_PORT 5432
+envsync var set dev API_KEY secret123 --sensitive
 ```
 
-### 3. Set Variables
+### 3. 添加配置文件
 
 ```bash
-# Set a regular variable
-envsync env set development DATABASE_URL "postgresql://user:pass@localhost:5432/devdb"
-
-# Set an encrypted sensitive variable
-envsync env set development API_KEY "secret-api-key-123" --encrypted
-
-# Set with type and description
-envsync env set development PORT 8000 --type int --description "Server port"
+envsync file add config.yaml config.yaml yaml --env dev
 ```
 
-### 4. View Environment
+### 4. 渲染配置
 
 ```bash
-# Show variables in table format
-envsync env show development
-
-# Show with decrypted sensitive values
-envsync env show development --decrypt
-
-# Export to JSON format
-envsync env export development --format json
+envsync template render config.yaml --env dev
 ```
 
-### 5. Validate Configuration
+## 命令参考
+
+### 环境管理
 
 ```bash
-# Validate against the default template
-envsync env validate development
+# 列出环境
+envsync env list
 
-# Validate against a custom template
-envsync env validate development --template production
+# 添加环境
+envsync env add test --description "测试环境"
 
-# Validate with custom rules
-envsync env validate development --rules ./validation-rules.json
+# 删除环境
+envsync env remove test --force
 ```
 
-### 6. Compare Environments
+### 变量管理
 
 ```bash
-# Compare two environments
-envsync diff env development production
+# 列出变量
+envsync var list dev
 
-# Show unified diff format
-envsync diff env development production --format unified
+# 设置变量
+envsync var set dev DEBUG true --description "调试模式"
 
-# Compare with a file
-envsync diff file development ./config/.env
+# 删除变量
+envsync var remove dev DEBUG
 ```
 
-### 7. Create and Restore Snapshots
+### 配置文件管理
 
 ```bash
-# Create a snapshot of all environments
-envsync snapshot create "before-deployment" --description "v1.0 deployment"
+# 列出配置文件
+envsync file list
 
-# List snapshots
+# 添加配置文件
+envsync file add database config/database.yaml yaml --env dev --encrypt password
+
+# 删除配置文件
+envsync file remove database
+```
+
+### 模板操作
+
+```bash
+# 渲染模板
+envsync template render config --env dev --output config.dev.yaml
+
+# 预览渲染结果
+envsync template preview config --env dev
+```
+
+### 差异对比
+
+```bash
+# 对比两个环境
+envsync diff env dev prod
+
+# 对比变量
+envsync diff vars dev prod
+```
+
+### 加密管理
+
+```bash
+# 初始化加密
+envsync crypto init
+
+# 加密配置文件
+envsync crypto encrypt database
+
+# 解密配置文件
+envsync crypto decrypt database
+```
+
+### 配置校验
+
+```bash
+# 校验配置文件
+envsync validate file config --env dev
+
+# 校验整个环境
+envsync validate env dev
+```
+
+### 快照管理
+
+```bash
+# 创建快照
+envsync snapshot create dev --description "发布前备份"
+
+# 列出快照
 envsync snapshot list
 
-# Restore from snapshot
-envsync snapshot restore <snapshot-id>
+# 恢复快照
+envsync snapshot restore <snapshot_id>
+
+# 删除快照
+envsync snapshot delete <snapshot_id>
 ```
 
-### 8. Render Templates
+### 导出
 
 ```bash
-# Render a template file with environment variables
-envsync env render development ./templates/config.yaml.tpl ./output/config.yaml
+# 导出环境配置
+envsync export env dev --output ./export --format yaml
+
+# 导出为 CSV
+envsync export csv dev prod --output ./vars.csv
+
+# 导出为 Kubernetes Secret
+envsync export k8s prod --output secret.yaml --name app-secret
 ```
 
-## Command Reference
+## 配置文件模板示例
 
-### Environment Commands
-
-| Command | Description |
-|---------|-------------|
-| `envsync env create <name>` | Create a new environment |
-| `envsync env list` | List all environments |
-| `envsync env show <name>` | Show environment variables |
-| `envsync env set <env> <key> <value>` | Set an environment variable |
-| `envsync env get <env> <key>` | Get an environment variable |
-| `envsync env delete <name>` | Delete an environment |
-| `envsync env import <env> <file>` | Import variables from a file |
-| `envsync env export <env>` | Export environment variables |
-| `envsync env validate <env>` | Validate environment |
-| `envsync env render <env> <template> <output>` | Render a template file |
-
-### Template Commands
-
-| Command | Description |
-|---------|-------------|
-| `envsync template create <name>` | Create a new template |
-| `envsync template list` | List all templates |
-| `envsync template show <name>` | Show template details |
-| `envsync template delete <name>` | Delete a template |
-| `envsync template export <name>` | Export a template |
-| `envsync template add-variable` | Add a variable to a template |
-| `envsync template remove-variable` | Remove a variable from a template |
-| `envsync template init-default` | Initialize default template |
-
-### Snapshot Commands
-
-| Command | Description |
-|---------|-------------|
-| `envsync snapshot create <name>` | Create a snapshot |
-| `envsync snapshot list` | List all snapshots |
-| `envsync snapshot show <id>` | Show snapshot details |
-| `envsync snapshot restore <id>` | Restore from a snapshot |
-| `envsync snapshot delete <id>` | Delete a snapshot |
-| `envsync snapshot export <id>` | Export snapshot environments |
-
-### Diff Commands
-
-| Command | Description |
-|---------|-------------|
-| `envsync diff env <env1> <env2>` | Compare two environments |
-| `envsync diff file <env> <file>` | Compare environment with a file |
-| `envsync diff snapshot <env> <id>` | Compare with snapshot version |
-| `envsync diff template <env> [template]` | Compare with template |
-
-### Utility Commands
-
-| Command | Description |
-|---------|-------------|
-| `envsync init` | Initialize envsync |
-| `envsync status` | Show status summary |
-| `envsync encrypt <value>` | Encrypt a value |
-| `envsync decrypt <value>` | Decrypt a value |
-| `envsync rotate-key` | Rotate encryption key |
-
-## Templating System
-
-envsync supports powerful template rendering with variable substitution.
-
-### Template Syntax
+创建模板文件 `config.template.yaml`:
 
 ```yaml
-# Template file (config.yaml.tpl)
 database:
-  url: "{{ DATABASE_URL }}"
-  pool_size: {{ DATABASE_POOL_SIZE | default(10) }}
-
-server:
-  host: "{{ HOST | default(0.0.0.0) }}"
-  port: {{ PORT | default(8000) }}
-  debug: {{ DEBUG | default(false) }}
-
+  host: ${DATABASE_HOST}
+  port: ${DATABASE_PORT:5432}
+  name: ${DATABASE_NAME:myapp}
+  
 api:
-  key: "{{ API_KEY }}"
-  secret: "{{ API_SECRET }}"
+  key: ${API_KEY}
+  url: ${API_URL}
+  debug: ${DEBUG:false}
 ```
 
-### Supported Features
-
-- **Basic substitution**: `{{ VARIABLE_NAME }}`
-- **Default values**: `{{ VARIABLE_NAME | default('default_value') }}`
-- **Nested variables**: Variables can reference other variables
-- **Cross-format support**: Works with JSON, YAML, TOML, and .env files
-
-### Rendering a Template
+使用模板:
 
 ```bash
-# Render template with development environment variables
-envsync env render development ./templates/config.yaml.tpl ./config.yaml
+envsync file add config config.yaml yaml --env dev --template config.template.yaml
+envsync template render config --env dev
 ```
 
-## Validation System
+## 项目结构
 
-envsync provides two validation mechanisms:
-
-### 1. Template-based Validation
-
-Templates define variable schemas with types, patterns, and requirements.
-
-```bash
-# Create a template with validation rules
-envsync template create production
-
-# Add a variable with pattern validation
-envsync template add-variable production DATABASE_URL \
-  --type url \
-  --required \
-  --description "Database connection URL"
-
-# Add with regex pattern
-envsync template add-variable production API_KEY \
-  --type string \
-  --required \
-  --sensitive \
-  --pattern "^sk-[A-Za-z0-9]{32}$"
+```
+.
+├── .envsync/
+│   ├── config.yaml      # 项目配置
+│   ├── snapshots/       # 快照存储
+│   ├── templates/       # 模板文件
+│   └── keys/            # 加密密钥
+└── ...
 ```
 
-### 2. Custom Validation Rules
+## 许可证
 
-Create a rules file (e.g., `validation-rules.json`):
-
-```json
-[
-  {
-    "field": "DATABASE_URL",
-    "rule": "contains",
-    "value": "postgresql",
-    "message": "Must use PostgreSQL database"
-  },
-  {
-    "field": "PORT",
-    "rule": "min",
-    "value": 1024,
-    "message": "Port must be above 1024"
-  },
-  {
-    "field": "LOG_LEVEL",
-    "rule": "one_of",
-    "value": ["DEBUG", "INFO", "WARNING", "ERROR"],
-    "message": "Invalid log level"
-  },
-  {
-    "field": "API_KEY",
-    "rule": "min_length",
-    "value": 32,
-    "message": "API key must be at least 32 characters"
-  }
-]
-```
-
-Validate with custom rules:
-
-```bash
-envsync env validate production --rules ./validation-rules.json
-```
-
-### Supported Validation Rules
-
-| Rule | Description | Example |
-|------|-------------|---------|
-| `min_length` | Minimum string length | `{"rule": "min_length", "value": 5}` |
-| `max_length` | Maximum string length | `{"rule": "max_length", "value": 100}` |
-| `min` | Minimum numeric value | `{"rule": "min", "value": 1024}` |
-| `max` | Maximum numeric value | `{"rule": "max", "value": 65535}` |
-| `equals` | Exact match | `{"rule": "equals", "value": "production"}` |
-| `contains` | Contains substring | `{"rule": "contains", "value": "https"}` |
-| `not_contains` | Does not contain substring | `{"rule": "not_contains", "value": "localhost"}` |
-| `one_of` | One of allowed values | `{"rule": "one_of", "value": ["dev", "prod"]}` |
-| `regex` | Matches regex pattern | `{"rule": "regex", "value": "^[A-Z0-9]+$"}` |
-
-## Encryption
-
-envsync uses Fernet (AES) encryption to protect sensitive configuration values.
-
-### Key Management
-
-```bash
-# Encrypt a value manually
-envsync encrypt "my-secret-value"
-
-# Decrypt a value
-envsync decrypt "gAAAAABk..."
-
-# Rotate encryption key (WARNING: requires re-encrypting all values)
-envsync rotate-key
-```
-
-### Automatic Encryption
-
-Variables marked as sensitive in templates are automatically encrypted when set:
-
-```bash
-# API_KEY is marked as sensitive in the template
-# It will be encrypted automatically
-envsync env set production API_KEY "secret-key"
-```
-
-Or encrypt explicitly:
-
-```bash
-envsync env set production API_KEY "secret-key" --encrypted
-```
-
-## Import/Export
-
-### Import from Existing Files
-
-```bash
-# Import from a .env file
-envsync env import development ./.env --create
-
-# Import from JSON
-envsync env import development ./config.json
-
-# Merge with existing variables (default)
-envsync env import development ./additional.env
-
-# Replace all variables
-envsync env import development ./full-config.env --no-merge
-```
-
-### Export to Various Formats
-
-```bash
-# Export as .env
-envsync env export production --format env --output ./.env
-
-# Export as JSON
-envsync env export production --format json --output ./config.json
-
-# Export as YAML
-envsync env export production --format yaml --output ./config.yaml
-
-# Export decrypted sensitive values
-envsync env export production --decrypt --output ./.env
-```
-
-## Configuration Location
-
-By default, envsync stores configuration in:
-
-- `~/.config/envsync/` - Main configuration directory
-- `~/.config/envsync/environments/` - Environment configurations
-- `~/.config/envsync/templates/` - Template definitions
-- `~/.config/envsync/snapshots/` - Snapshot metadata
-- `~/.config/envsync/snapshot_data/` - Snapshot data
-- `~/.config/envsync/encryption_key` - Encryption key
-
-## Examples
-
-### Example Workflow
-
-```bash
-# 1. Initialize
-envsync init
-
-# 2. Create environments
-envsync env create development
-envsync env create production
-
-# 3. Import existing configs
-envsync env import development ./dev.env --create
-envsync env import production ./prod.env --create
-
-# 4. Set sensitive values
-envsync env set development API_KEY "dev-key-123" --encrypted
-envsync env set production API_KEY "prod-key-456" --encrypted
-
-# 5. Validate
-envsync env validate development
-envsync env validate production
-
-# 6. Compare
-envsync diff env development production
-
-# 7. Create snapshot before deployment
-envsync snapshot create "pre-deployment"
-
-# 8. Render configuration files
-envsync env render development ./templates/app.tpl ./app/.env
-envsync env render production ./templates/app.tpl ./app/.env.prod
-```
-
-### Example Template File
-
-```json
-{
-  "name": "production",
-  "description": "Production environment template",
-  "variables": {
-    "ENVIRONMENT": {
-      "type": "string",
-      "description": "Environment identifier",
-      "default": "production"
-    },
-    "DEBUG": {
-      "type": "bool",
-      "description": "Debug mode flag",
-      "default": "false"
-    },
-    "DATABASE_URL": {
-      "type": "url",
-      "description": "PostgreSQL connection URL"
-    },
-    "DATABASE_POOL_SIZE": {
-      "type": "int",
-      "description": "Database connection pool size",
-      "default": "10"
-    },
-    "REDIS_URL": {
-      "type": "url",
-      "description": "Redis connection URL"
-    },
-    "API_KEY": {
-      "type": "string",
-      "description": "External API key",
-      "pattern": "^[A-Za-z0-9_-]{32,}$"
-    },
-    "API_SECRET": {
-      "type": "string",
-      "description": "External API secret"
-    },
-    "LOG_LEVEL": {
-      "type": "string",
-      "description": "Logging level",
-      "default": "INFO"
-    },
-    "PORT": {
-      "type": "int",
-      "description": "Server port",
-      "default": "8000"
-    },
-    "HOST": {
-      "type": "string",
-      "description": "Server host",
-      "default": "0.0.0.0"
-    },
-    "SSL_ENABLED": {
-      "type": "bool",
-      "description": "Enable SSL/TLS",
-      "default": "true"
-    },
-    "CORS_ORIGINS": {
-      "type": "string",
-      "description": "Allowed CORS origins",
-      "default": "https://example.com"
-    }
-  },
-  "required": ["DATABASE_URL", "API_KEY", "API_SECRET"],
-  "sensitive": ["DATABASE_URL", "REDIS_URL", "API_KEY", "API_SECRET"]
-}
-```
-
-## Development
-
-### Running Tests
-
-```bash
-# Run all tests
-pytest src/envsync/tests/
-
-# Run with coverage
-pytest src/envsync/tests/ --cov=envsync
-
-# Run specific test file
-pytest src/envsync/tests/test_config.py -v
-```
-
-### Code Quality
-
-```bash
-# Format code
-black src/envsync/
-
-# Lint
-flake8 src/envsync/
-
-# Type check
-mypy src/envsync/
-```
-
-## License
-
-MIT License - see [LICENSE](LICENSE) file.
+MIT
